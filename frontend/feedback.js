@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusEl = document.getElementById('form-status');
   
   // The backend API endpoint
-  const API_URL = 'http://localhost:5000/api/feedback';
+  const API_URL = 'https://awp-mini-project.onrender.com/api/feedback';
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault(); // Stop the form from reloading the page
@@ -44,4 +44,5 @@ document.addEventListener('DOMContentLoaded', () => {
       statusEl.className = 'error';
     }
   });
+
 });
