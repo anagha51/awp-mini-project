@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('reviews-container');
   
   // The backend API endpoint
-  const API_URL = 'http://localhost:5000/api/feedback';
+  const API_URL = 'https://awp-mini-project.onrender.com/api/feedback';
 
   // Function to create the star rating
   function getStarRating(rating) {
@@ -54,4 +54,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initial load
   fetchAndDisplayReviews();
+
 });
