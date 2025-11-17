@@ -54,7 +54,18 @@ app.get('/api/feedback', async (req, res) => {
   }
 });
 
+app.delete('/api/feedback/:id', async (req, res) => {
+  try {
+    await Feedback.findByIdAndDelete(req.params.id);
+    res.status(200).json({ msg: 'Feedback deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server Error' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Backend server is running on http://localhost:${PORT}`);
 
 });
+
