@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - The Green Bean Cafe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .admin-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: #2d5f4f;
+        color: white;
+        padding: 20px;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        z-index: 1000;
+      }
+
+      .sidebar h1 {
+        font-size: 1.5em;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #1a9f6f;
+        padding-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .sidebar h1 i {
+        font-size: 1.8em;
+      }
+
+      .sidebar ul {
+        list-style: none;
+      }
+
+      .sidebar li {
+        margin-bottom: 10px;
+      }
+
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 4px;
+        transition: background 0.3s ease;
+      }
+
+      .sidebar a i {
+        width: 20px;
+        text-align: center;
+      }
+
+      .sidebar a:hover,
+      .sidebar a.active {
+        background: #1a9f6f;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        flex: 1;
+        padding: 40px;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .header h2 {
+        color: #2d5f4f;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .header h2 i {
+        font-size: 1.5em;
+      }
+
+      .logout-btn {
+        background: #d9534f;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .logout-btn:hover {
+        background: #c9302c;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #2d5f4f;
+      }
+
+      .stat-card h3 {
+        color: #2d5f4f;
+        font-size: 2.5em;
+        margin: 10px 0;
+      }
+
+      .stat-card p {
+        color: #666;
+        font-size: 0.95em;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .chart-container h3 {
+        color: #2d5f4f;
+        margin-bottom: 15px;
+        font-size: 1.2em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chart-container h3 i {
+        font-size: 1.3em;
+      }
+
+      .chart-wrapper {
+        position: relative;
+        height: 300px;
+      }
+
+      .table-container {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        background: #2d5f4f;
+        color: white;
+      }
+
+      th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+      }
+
+      td {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+      }
+
+      tbody tr:hover {
+        background: #f9f9f9;
+      }
+
+      .rating {
+        color: #f39c12;
+        font-weight: bold;
+      }
+
+      .action-btns {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn-delete {
+        background: #d9534f;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .btn-delete:hover {
+        background: #c9302c;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-size: 1.1em;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .tab-content h2 {
+        color: #2d5f4f;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .tab-content h2 i {
+        font-size: 1.5em;
+      }
+
+      /* Mobile */
+      @media (max-width: 768px) {
+        .sidebar {
+          position: fixed;
+          left: -250px;
+          height: 100vh;
+          z-index: 10;
+          transition: left 0.3s ease;
+        }
+
+        .sidebar.open {
+          left: 0;
+        }
+
+        .main-content {
+          margin-left: 0;
+          padding: 20px;
+        }
+
+        .header {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+
+        table {
+          font-size: 0.85em;
+        }
+
+        th, td {
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <h1><i class="fas fa-leaf"></i> Admin Panel</h1>
+      <ul>
+        <li><a href="#" class="nav-link active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="#" class="nav-link" data-tab="feedback"><i class="fas fa-comments"></i> Feedback</a></li>
+        <li><a href="#" class="nav-link" data-tab="reviews"><i class="fas fa-star"></i> Reviews</a></li>
+        <li><a href="#" class="nav-link" data-tab="settings"><i class="fas fa-cog"></i> Settings</a></li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <!-- Header -->
+      <div class="header">
+        <h2 id="page-title"><i class="fas fa-chart-line"></i> Dashboard</h2>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+
+      <!-- Dashboard Tab -->
+      <div id="dashboard" class="tab-content active">
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p>Total Feedback</p>
+            <h3 id="total-feedback">0</h3>
+          </div>
+          <div class="stat-card">
+            <p>Total Reviews</p>
+            <h3 id="total-reviews">0</h3>
+          </div>
+          <div class="stat-card">
+            <p>Avg Rating</p>
+            <h3 id="avg-rating">0</h3>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <!-- Rating Distribution Chart -->
+          <div class="chart-container">
+            <h3><i class="fas fa-chart-bar"></i> Rating Distribution</h3>
+            <div class="chart-wrapper">
+              <canvas id="ratingChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Feedback Over Time -->
+          <div class="chart-container">
+            <h3><i class="fas fa-chart-area"></i> Feedback Trend</h3>
+            <div class="chart-wrapper">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback Tab -->
+      <div id="feedback" class="tab-content">
+        <h2><i class="fas fa-comments"></i> Manage Feedback</h2>
+        <div class="table-container">
+          <table id="feedback-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Rating</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="feedback-body">
+              <tr><td colspan="5" class="no-data">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Reviews Tab -->
+      <div id="reviews" class="tab-content">
+        <h2><i class="fas fa-star"></i> Manage Reviews</h2>
+        <div class="table-container">
+          <table id="reviews-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Rating</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="reviews-body">
+              <tr><td colspan="5" class="no-data">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Settings Tab -->
+      <div id="settings" class="tab-content">
+        <h2><i class="fas fa-cog"></i> Settings</h2>
+        <div style="background: white; padding: 20px; border-radius: 8px;">
+          <p><strong>API Base URL:</strong> <code id="api-url">http://localhost:5000</code></p>
+          <p style="margin-top: 15px; color: #666;">Configure your backend connection here.</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = 'http://localhost:5000/api';
+      let allFeedback = [];
+      let allReviews = [];
+      let chartInstances = {};
+
+      const chartColors = [
+        '#d9534f',   
+        '#f39c12',   
+        '#5cb85c',  
+        '#1a9f6f',  
+        '#2d5f4f'  
+      ];
+
+      // Tab switching
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const tab = e.target.getAttribute('data-tab');
+          switchTab(tab);
+        });
+      });
+
+      function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+          tab.classList.remove('active');
+        });
+        document.getElementById(tabName).classList.add('active');
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+          link.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+        const titles = {
+          dashboard: '<i class="fas fa-chart-line"></i> Dashboard',
+          feedback: '<i class="fas fa-comments"></i> Manage Feedback',
+          reviews: '<i class="fas fa-star"></i> Manage Reviews',
+          settings: '<i class="fas fa-cog"></i> Settings'
+        };
+        document.getElementById('page-title').innerHTML = titles[tabName] || 'Dashboard';
+
+        if (tabName === 'feedback') {
+          loadFeedback();
+        }
+        if (tabName === 'reviews') {
+          loadReviews();
+        }
+        if (tabName === 'dashboard') {
+          loadDashboardStats();
+          setTimeout(() => initCharts(), 100);
+        }
+      }
+
+      async function loadFeedback() {
+        try {
+          const response = await fetch(`${API_URL}/feedback`);
+          allFeedback = await response.json();
+          renderFeedback();
+        } catch (err) {
+          console.error('Failed to load feedback:', err);
+          document.getElementById('feedback-body').innerHTML =
+            '<tr><td colspan="5" class="no-data">Error loading feedback</td></tr>';
+        }
+      }
+
+      async function loadReviews() {
+        try {
+          const response = await fetch(`${API_URL}/feedback`);
+          allReviews = await response.json();
+          renderReviews();
+        } catch (err) {
+          console.error('Failed to load reviews:', err);
+          document.getElementById('reviews-body').innerHTML =
+            '<tr><td colspan="5" class="no-data">Error loading reviews</td></tr>';
+        }
+      }
+
+      function renderFeedback() {
+        const tbody = document.getElementById('feedback-body');
+        if (allFeedback.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="no-data">No feedback yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = allFeedback.map(fb => `
+          <tr>
+            <td>${fb.name}</td>
+            <td class="rating">${'⭐'.repeat(fb.rating)}</td>
+            <td>${fb.message.substring(0, 50)}...</td>
+            <td>${new Date(fb.createdAt).toLocaleDateString()}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-delete" onclick="deleteFeedback('${fb._id}')"><i class="fas fa-trash"></i> Delete</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      function renderReviews() {
+        const tbody = document.getElementById('reviews-body');
+        if (allReviews.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="no-data">No reviews yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = allReviews.map(review => `
+          <tr>
+            <td>${review.name}</td>
+            <td class="rating">${'⭐'.repeat(review.rating)}</td>
+            <td>${review.message.substring(0, 50)}...</td>
+            <td>${new Date(review.createdAt).toLocaleDateString()}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-delete" onclick="deleteReview('${review._id}')"><i class="fas fa-trash"></i> Delete</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      async function deleteFeedback(id) {
+        if (!confirm('Delete this feedback?')) return;
+        try {
+          await fetch(`${API_URL}/feedback/${id}`, { method: 'DELETE' });
+          allFeedback = allFeedback.filter(f => f._id !== id);
+          renderFeedback();
+          alert('Feedback deleted successfully!');
+        } catch (err) {
+          alert('Failed to delete feedback');
+        }
+      }
+
+      async function deleteReview(id) {
+        if (!confirm('Delete this review?')) return;
+        try {
+          await fetch(`${API_URL}/feedback/${id}`, { method: 'DELETE' });
+          allReviews = allReviews.filter(r => r._id !== id);
+          renderReviews();
+          alert('Review deleted successfully!');
+        } catch (err) {
+          alert('Failed to delete review');
+        }
+      }
+
+      async function loadDashboardStats() {
+        try {
+          const response = await fetch(`${API_URL}/feedback`);
+          const data = await response.json();
+          
+          document.getElementById('total-feedback').textContent = data.length;
+          document.getElementById('total-reviews').textContent = data.length;
+          
+          const avgRating = data.length > 0
+            ? (data.reduce((sum, item) => sum + item.rating, 0) / data.length).toFixed(1)
+            : 0;
+          document.getElementById('avg-rating').textContent = avgRating;
+
+          allFeedback = data;
+        } catch (err) {
+          console.error('Failed to load dashboard stats:', err);
+        }
+      }
+
+      function initCharts() {
+        destroyCharts();
+        createRatingChart();
+        createTrendChart();
+      }
+
+      function destroyCharts() {
+        Object.values(chartInstances).forEach(chart => {
+          if (chart) chart.destroy();
+        });
+        chartInstances = {};
+      }
+
+      function createRatingChart() {
+        const ratingCounts = [0, 0, 0, 0, 0];
+        allFeedback.forEach(fb => {
+          if (fb.rating >= 1 && fb.rating <= 5) {
+            ratingCounts[fb.rating - 1]++;
+          }
+        });
+
+        const ctx = document.getElementById('ratingChart');
+        if (!ctx) return;
+        
+        chartInstances.rating = new Chart(ctx.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+            datasets: [{
+              label: 'Number of Reviews',
+              data: ratingCounts,
+              backgroundColor: chartColors,
+              borderColor: '#2d5f4f',
+              borderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, labels: { font: { size: 12 } } }
+            },
+            scales: {
+              y: { beginAtZero: true, max: Math.max(...ratingCounts, 5) }
+            }
+          }
+        });
+      }
+
+      function createTrendChart() {
+        const dates = {};
+        allFeedback.forEach(fb => {
+          const date = new Date(fb.createdAt).toLocaleDateString();
+          dates[date] = (dates[date] || 0) + 1;
+        });
+
+        const sortedDates = Object.keys(dates).sort();
+        const counts = sortedDates.map(d => dates[d]);
+
+        const ctx = document.getElementById('trendChart');
+        if (!ctx) return;
+
+        chartInstances.trend = new Chart(ctx.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: sortedDates.slice(-7),
+            datasets: [{
+              label: 'Feedback per Day',
+              data: counts.slice(-7),
+              borderColor: '#2d5f4f',
+              backgroundColor: 'rgba(45, 95, 79, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: '#1a9f6f',
+              pointBorderColor: '#2d5f4f',
+              pointRadius: 5,
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, labels: { font: { size: 12 } } }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      function logout() {
+        if (confirm('Log out?')) {
+          window.location.href = 'index.html';
+        }
+      }
+
+      loadDashboardStats();
+      setTimeout(() => initCharts(), 100);
+    </script>
+  </body>
+</html>
